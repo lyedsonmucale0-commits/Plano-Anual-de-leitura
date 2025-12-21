@@ -2,28 +2,43 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; URL='https://drive.google.com/uc?export=download&id=1AUBCCt8Rovn7H3NAd1MVMmVjXN8HZ212'">
-<title>Download HolyPlay DEMO</title>
+<title>Preparando download…</title>
+
 <style>
 body{
+  margin:0;
+  height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
-  height:100vh;
-  background:#121212;
+  background:#0d0d0d;
   color:#fff;
   font-family:Inter, sans-serif;
   text-align:center;
 }
-a{
-  color:#1e88e5;
-  text-decoration:none;
-  font-weight:700;
+.loader{
+  animation:pulse 1.5s infinite;
+}
+@keyframes pulse{
+  0%{opacity:.3}
+  50%{opacity:1}
+  100%{opacity:.3}
 }
 </style>
+
+<script>
+window.onload = function () {
+  setTimeout(() => {
+    window.location.href =
+      "https://drive.google.com/uc?export=download&id=1AUBCCt8Rovn7H3NAd1MVMmVjXN8HZ212";
+  }, 500);
+};
+</script>
 </head>
+
 <body>
-<p>Se você não for redirecionado automaticamente, <br>
-<a href="https://drive.google.com/uc?export=download&id=1PuSRHjzn3Ai9xKvqt4HKbswN0xKlXzNi">clique aqui</a> para baixar o HolyPlay DEMO.</p>
+  <div class="loader">
+    ⏳ Preparando o download do HolyPlay…
+  </div>
 </body>
 </html>
