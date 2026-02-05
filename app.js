@@ -1,64 +1,145 @@
-let currentCat = "Todos";
+// ==============================
+// NOSPLAY — App.js (Corrigido)
+// ==============================
 
+let currentCat = "Todos";
+let currentSlide = 0;
+let currentShots = [];
+let currentAppName = null;
+
+// ==============================
+// USUÁRIO ANÔNIMO
+// ==============================
+let userId = localStorage.getItem("nosplay_uid");
+if (!userId) {
+  userId = "u_" + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem("nosplay_uid", userId);
+}
+
+// ==============================
+// APPS DE EXEMPLO
+// ==============================
 const appsData = [
   {
     nome: "HolyPlay DEMO",
     categoria: "Educação",
-    versao: "1.0.0",
-    tamanho: "32 MB",
-    desc:"HolyPlay DEMO é um aplicativo cristão projetado para oferecer uma experiência completa de entretenimento e aprendizado, reunindo conteúdos diversos que inspiram, desafiam e entretêm de maneira segura e intuitiva. Desenvolvido para jovens e adultos, o app busca unir diversão e reflexão, permitindo que cada usuário explore seu próprio caminho de descoberta espiritual e pessoal.",
+    versao: "3.1.0",
+    tamanho: "32MB",
+    desc: "HolyPlay DEMO é um aplicativo cristão projetado para oferecer uma experiência completa de entretenimento e aprendizado.",
     icon: "https://i.imgur.com/4Z9UNwL.png",
     shots: [
-   "https://i.imgur.com/vKuE823.jpeg",
-   "https://i.imgur.com/18bFIN2.jpeg",
-   "https://i.imgur.com/qyBzUaE.jpeg",
-   "https://i.imgur.com/FVzr421.jpeg",
-   "https://i.imgur.com/xh4gX3h.jpeg",
-   "https://i.imgur.com/Aq8zr3O.jpeg",
-   "https://i.imgur.com/vD5udWA.jpeg",
-   "https://i.imgur.com/Zi5kAjp.jpeg",
+      "https://i.imgur.com/vKuE823.jpeg",
+      "https://i.imgur.com/18bFIN2.jpeg",
+      "https://i.imgur.com/qyBzUaE.jpeg",
+      "https://i.imgur.com/FVzr421.jpeg",
+      "https://i.imgur.com/xh4gX3h.jpeg",
+      "https://i.imgur.com/Aq8zr3O.jpeg",
+      "https://i.imgur.com/vD5udWA.jpeg",
+      "https://i.imgur.com/Zi5kAjp.jpeg"
     ],
     link: "https://github.com/lyedsonmucale0-commits/HolyPlay/releases/download/V1.2/HolyPlay.apk"
   }
 ];
 
-function renderCategories(){
+// ==============================
+// CATEGORIAS
+// ==============================
+function renderCategories() {
   const cats = ["Todos", ...new Set(appsData.map(a => a.categoria))];
   const box = document.getElementById("cats");
+  if (!box) return;
   box.innerHTML = "";
   cats.forEach(c => {
-    box.innerHTML += `<div class="cat ${c===currentCat?'active':''}" onclick="setCat('${c}')">${c}</div>`;
+    box.innerHTML += `<div class="cat ${c === currentCat ? "active" : ""}" onclick="setCat('${c}')">${c}</div>`;
   });
 }
 
-function setCat(c){
+function setCat(c) {
   currentCat = c;
   renderCategories();
   renderApps();
 }
 
-function renderApps(){
-  const q = search.value.toLowerCase();
+// ==============================
+// LISTA DE APPS
+// ==============================
+function renderApps() {
+  const searchInput = document.getElementById("search");
+  const q = searchInput ? searchInput.value.toLowerCase() : "";
+  const apps = document.getElementById("apps");
+  if (!apps) return;
   apps.innerHTML = "";
+
   appsData
-    .filter(a => currentCat==="Todos" || a.categoria===currentCat)
+    .filter(a => currentCat === "Todos" || a.categoria === currentCat)
     .filter(a => a.nome.toLowerCase().includes(q))
     .forEach(a => {
-      apps.innerHTML += `
-      <div class="app" onclick="openApp('${a.nome}')">
+      const appEl = document.createElement("div");
+      appEl.className = "app";
+      appEl.onclick = () => openApp(a.nome);
+      appEl.innerHTML = `
         <img src="${a.icon}">
         <div class="app-name">${a.nome}</div>
         <div class="app-meta">${a.categoria}</div>
-      </div>`;
+        <div class="app-info">
+          <div id="rating-${a.nome}">0☆</div>
+          <div>${a.tamanho}</div>
+          <div><img src="icons/download.svg" id="downloads-${a.nome}">0</div>
+        </div>
+      `;
+      apps.appendChild(appEl);
+
+      // BUSCAR DOWNLOADS REAIS
+      db.ref(`apps/${a.nome}/downloads`).once("value", snap => {
+        const val = snap.val() || 0;
+        const el = document.getElementById(`downloads-${a.nome}`);
+        if (el && el.nextSibling) el.nextSibling.textContent = val.toLocaleString();
+      });
+
+      // BUSCAR AVALIAÇÃO MÉDIA
+      db.ref(`apps/${a.nome}/rating`).once("value", snap => {
+        const val = snap.val() || { stars: 0, votes: 0 };
+        const avg = val.votes ? (val.stars / val.votes).toFixed(1) : 0;
+        const el = document.getElementById(`rating-${a.nome}`);
+        if (el) el.textContent = avg + "☆";
+      });
     });
+
+  window.scrollTo(0, 0);
+  checkScroll();
 }
 
-function openApp(nome){
-  const a = appsData.find(x => x.nome === nome);
-  home.style.display="none";
-  details.style.display="block";
+// ==============================
+// BLOQUEAR SCROLL SE POUCOS APPS
+// ==============================
+function checkScroll() {
+  const homeSection = document.getElementById("home");
+  if (!homeSection) return;
+  if (homeSection.scrollHeight <= window.innerHeight) {
+    document.body.style.overflow = "hidden"; // bloqueia scroll
+  } else {
+    document.body.style.overflow = "auto"; // permite scroll
+  }
+}
+
+// ==============================
+// DETALHES DO APP
+// ==============================
+function openApp(name) {
+  const a = appsData.find(x => x.nome === name);
+  if (!a) return;
+  currentAppName = name;
+
+  const home = document.getElementById("home");
+  const details = document.getElementById("details");
+  if (!home || !details) return;
+
+  home.style.display = "none";
+  details.style.display = "block";
+
   details.innerHTML = `
     <div class="back" onclick="goHome()">← Voltar</div>
+
     <div class="details-top">
       <img src="${a.icon}">
       <div>
@@ -66,35 +147,273 @@ function openApp(nome){
         <small>${a.categoria}</small>
       </div>
     </div>
-    <div class="install" onclick="location.href='${a.link}'">INSTALAR</div>
-    <div class="screens">
-      ${a.shots.map(s=>`<img src="${s}" onclick="openLightbox('${s}')">`).join("")}
+
+    <div class="app-info">
+      <div id="rating-main">0☆</div>
+      <div>${a.tamanho}</div>
+      <div><img src="icons/download.svg" id="downloads-main">0</div>
     </div>
-    <div class="desc">${a.desc}</div>
+
+    <div class="install" onclick="installApp('${a.nome}','${a.link}')">INSTALAR</div>
+
+    <div class="screens">
+      ${a.shots.map((s,i)=>`<img src="${s}" onclick="openLightbox(${i})">`).join("")}
+    </div>
+
+    <div class="rating-box">
+      <h3>Avaliar este app</h3>
+      <div class="stars" id="rating-stars">
+        ${[1,2,3,4,5].map(n=>`<span onclick="rateApp(${n})">★</span>`).join("")}
+      </div>
+      <small id="rating-msg"></small>
+    </div>
+
+    <div class="comments">
+      <h3>Comentários</h3>
+      <input id="cname" placeholder="Seu nome">
+      <textarea id="ctext" placeholder="Escreva um comentário"></textarea>
+      <button onclick="sendComment()">Enviar</button>
+      <div id="comments-list"></div>
+    </div>
   `;
+
+  // Adiciona estado no histórico
+  history.pushState({ page: "details", app: name }, "", "#details");
+
   window.scrollTo(0,0);
+  updateMainData();
+  loadComments();
 }
 
-function openAbout(){
-  home.style.display="none";
-  about.style.display="block";
+// ==============================
+// FUNÇÕES DE NAVEGAÇÃO
+// ==============================
+function goHome() {
+  const home = document.getElementById("home");
+  const details = document.getElementById("details");
+  const about = document.getElementById("about");
+  if(home) home.style.display="block";
+  if(details) details.style.display="none";
+  if(about) about.style.display="none";
+
+  // Atualiza histórico
+  history.pushState({ page: "home" }, "", "#home");
 }
 
-function goHome(){
-  home.style.display="block";
-  details.style.display="none";
-  about.style.display="none";
+function openAbout() {
+  const home = document.getElementById("home");
+  const details = document.getElementById("details");
+  const about = document.getElementById("about");
+  if(home) home.style.display="none";
+  if(details) details.style.display="none";
+  if(about) about.style.display="block";
+
+  // Atualiza histórico
+  history.pushState({ page: "about" }, "", "#about");
 }
 
-function openLightbox(src){
-  const lb = document.getElementById("lightbox");
-  document.getElementById("lightbox-img").src = src;
-  lb.style.display = "flex";
+// ==============================
+// LIGHTBOX
+// ==============================
+// ==============================
+// LIGHTBOX
+// ==============================
+function openLightbox(i) {
+  if (!currentAppName) return;
+  currentSlide = i;
+  const app = appsData.find(a => a.nome === currentAppName);
+  if (!app || !app.shots.length) return;
+  
+  currentShots = app.shots;
+  const lightbox = document.getElementById("lightbox");
+  const img = document.getElementById("lightbox-img");
+  if (!lightbox || !img) return;
+  
+  lightbox.style.display = "flex";
+  img.src = currentShots[i];
+  
+  // Adiciona estado ao histórico para o botão voltar
+  history.pushState({ page: "lightbox" }, "", "#lightbox");
 }
 
-function closeLightbox(){
-  document.getElementById("lightbox").style.display = "none";
+// Fecha lightbox
+function closeLightbox() {
+  const lightbox = document.getElementById("lightbox");
+  if (lightbox) lightbox.style.display = "none";
+  
+  // Volta ao estado anterior no histórico
+  history.back();
 }
 
+// Próxima imagem
+function nextSlide() {
+  if (!currentShots.length) return;
+  currentSlide = (currentSlide + 1) % currentShots.length;
+  const img = document.getElementById("lightbox-img");
+  if (img) img.src = currentShots[currentSlide];
+}
+
+// Imagem anterior
+function prevSlide() {
+  if (!currentShots.length) return;
+  currentSlide = (currentSlide - 1 + currentShots.length) % currentShots.length;
+  const img = document.getElementById("lightbox-img");
+  if (img) img.src = currentShots[currentSlide];
+}
+
+// Navegação via teclado
+window.addEventListener("keydown", (e) => {
+  const lightbox = document.getElementById("lightbox");
+  if (!lightbox || lightbox.style.display !== "flex") return;
+  
+  if (e.key === "Escape") closeLightbox(); // ESC fecha
+  if (e.key === "ArrowRight") nextSlide(); // seta direita
+  if (e.key === "ArrowLeft") prevSlide(); // seta esquerda
+});
+
+// ==============================
+// POPSTATE — BOTÃO VOLTAR ANDROID
+// ==============================
+window.addEventListener("popstate", (event) => {
+  const state = event.state;
+  const lightbox = document.getElementById("lightbox");
+  
+  // Se o lightbox estiver aberto, fecha antes de voltar
+  if (lightbox && lightbox.style.display === "flex") {
+    closeLightbox();
+    return;
+  }
+  
+  if (!state || state.page === "home") {
+    goHome();
+  } else if (state.page === "details") {
+    const appName = state.app || currentAppName;
+    openApp(appName);
+  } else if (state.page === "about") {
+    openAbout();
+  }
+});
+
+// ==============================
+// RATINGS
+// ==============================
+let selectedRating = 0;
+function rateApp(value) {
+  db.ref(`ratings/${currentAppName}/${userId}`).set({ value })
+    .then(()=> {
+      const msg = document.getElementById("rating-msg");
+      if(msg) msg.innerText = "Avaliação enviada ⭐";
+      highlightStars(value);
+      updateAverageRating(currentAppName);
+    });
+}
+
+function highlightStars(v){
+  document.querySelectorAll("#rating-stars span")
+    .forEach((s,i)=>s.style.color=i<v?"#f5c26b":"#555");
+}
+
+function updateAverageRating(appName){
+  db.ref(`ratings/${appName}`).once("value", snap => {
+    let total = 0, count = 0;
+    snap.forEach(s => { total += s.val().value; count++; });
+    db.ref(`apps/${appName}/rating`).set({ stars: total, votes: count });
+    updateMainData();
+    renderApps();
+  });
+}
+
+// ==============================
+// COMENTÁRIOS
+// ==============================
+function sendComment(){
+  const cname = document.getElementById("cname");
+  const ctext = document.getElementById("ctext");
+  if(!cname || !ctext || !ctext.value) return;
+
+  db.ref(`comments/${currentAppName}`).push({
+    name: cname.value || "Anônimo",
+    text: ctext.value,
+    time: Date.now()
+  });
+  ctext.value = "";
+}
+
+function loadComments(){
+  const list = document.getElementById("comments-list");
+  if(!list) return;
+
+  db.ref(`comments/${currentAppName}`).on("value", snap=>{
+    list.innerHTML="";
+    snap.forEach(s=>{
+      const c = s.val();
+      const likes = c.likes ? Object.keys(c.likes).length : 0;
+      list.innerHTML += `
+        <div class="comment">
+          <strong>${c.name}</strong>
+          <p>${c.text}</p>
+          <button onclick="likeComment('${s.key}')">👍 ${likes}</button>
+        </div>
+      `;
+    });
+  });
+}
+
+function likeComment(id){
+  const ref = db.ref(`comments/${currentAppName}/${id}/likes/${userId}`);
+  ref.once("value", s => s.exists() ? ref.remove() : ref.set(true));
+}
+
+// ==============================
+// UPDATE RATINGS + DOWNLOADS
+// ==============================
+function updateMainData() {
+  const downloadsMain = document.getElementById("downloads-main");
+  const ratingMain = document.getElementById("rating-main");
+
+  db.ref(`apps/${currentAppName}/downloads`).once("value", snap => {
+    if (downloadsMain && downloadsMain.nextSibling)
+      downloadsMain.nextSibling.textContent = (snap.val() || 0).toLocaleString();
+  });
+
+  db.ref(`apps/${currentAppName}/rating`).once("value", snap => {
+    const val = snap.val() || { stars:0, votes:0 };
+    const avg = val.votes ? (val.stars/val.votes).toFixed(1) : 0;
+    if (ratingMain) ratingMain.textContent = avg + "☆";
+  });
+}
+
+// ==============================
+// INIT
+// ==============================
 renderCategories();
 renderApps();
+
+// ==============================
+// POPSTATE — BOTÃO VOLTAR
+// ==============================
+window.addEventListener("popstate", (event) => {
+  const state = event.state;
+  const lightbox = document.getElementById("lightbox");
+
+  if(lightbox && lightbox.style.display === "flex"){
+    closeLightbox();
+    return;
+  }
+
+  if(!state || state.page === "home"){
+    goHome();
+  } else if(state.page === "details"){
+    const appName = state.app || currentAppName;
+    openApp(appName);
+  } else if(state.page === "about"){
+    openAbout();
+  }
+});
+
+// ==============================
+// GARANTIR QUE O APP COMEÇA NO TOPO
+// ==============================
+window.onload = () => {
+  window.scrollTo(0,0);
+};
