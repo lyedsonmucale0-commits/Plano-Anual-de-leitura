@@ -16,6 +16,17 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="firebase.js"></script>
 
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e88e5">
+
+<!-- iOS / ícones -->
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 </head>
 <body>
 <div class="page">
@@ -67,6 +78,10 @@
 <script>
   // Botão físico do sistema -> voltar
   window.addEventListener("popstate", () => {
+    const lightbox = document.getElementById("lightbox");
+    const details = document.getElementById("details");
+    const home = document.getElementById("home");
+
     if (lightbox.style.display === "flex") closeLightbox();
     else if (details.style.display === "block") goHome();
   });
@@ -75,13 +90,16 @@
   document.getElementById("search").addEventListener("input", () => {
     renderApps();
   });
+
+  // Service Worker PWA
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("PWA ativa 🚀"))
+        .catch(err => console.log("Erro no SW:", err));
+    });
+  }
 </script>
-
-
-  <footer>
-    © 2025 NosPlay — Todos os direitos reservados<br>
-    <a href="#" onclick="openAbout()">Sobre / Política</a>
-  </footer>
 
 </body>
 </html>
