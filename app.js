@@ -1,5 +1,5 @@
 // ==============================
-// NOSPLAY — App.js (Corrigido)
+// NOSPLAY — App.js (Corrigido SVG Download)
 // ==============================
 
 let currentCat = "Todos";
@@ -84,7 +84,13 @@ function renderApps() {
         <div class="app-info">
           <div id="rating-${a.nome}">0☆</div>
           <div>${a.tamanho}</div>
-          <div><img src="icons/download.svg" id="downloads-${a.nome}">0</div>
+          <div style="display:flex;align-items:center;gap:4px;" id="downloads-wrapper-${a.nome}">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20" fill="#1e88e5">
+              <path d="M0 0h24v24H0z" fill="none"/>
+              <path d="M5 20h14v-2H5v2zm7-18l-5 5h3v6h4v-6h3l-5-5z"/>
+            </svg>
+            <span id="downloads-${a.nome}">0</span>
+          </div>
         </div>
       `;
       apps.appendChild(appEl);
@@ -93,7 +99,7 @@ function renderApps() {
       db.ref(`apps/${a.nome}/downloads`).once("value", snap => {
         const val = snap.val() || 0;
         const el = document.getElementById(`downloads-${a.nome}`);
-        if (el && el.nextSibling) el.nextSibling.textContent = val.toLocaleString();
+        if (el) el.textContent = val.toLocaleString();
       });
 
       // BUSCAR AVALIAÇÃO MÉDIA
@@ -116,9 +122,9 @@ function checkScroll() {
   const homeSection = document.getElementById("home");
   if (!homeSection) return;
   if (homeSection.scrollHeight <= window.innerHeight) {
-    document.body.style.overflow = "hidden"; // bloqueia scroll
+    document.body.style.overflow = "hidden"; 
   } else {
-    document.body.style.overflow = "auto"; // permite scroll
+    document.body.style.overflow = "auto"; 
   }
 }
 
@@ -151,7 +157,13 @@ function openApp(name) {
     <div class="app-info">
       <div id="rating-main">0☆</div>
       <div>${a.tamanho}</div>
-      <div><img src="icons/download.svg" id="downloads-main">0</div>
+      <div style="display:flex;align-items:center;gap:4px;" id="downloads-wrapper-main">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20" fill="#1e88e5">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M5 20h14v-2H5v2zm7-18l-5 5h3v6h4v-6h3l-5-5z"/>
+        </svg>
+        <span id="downloads-main">0</span>
+      </div>
     </div>
 
     <div class="install" onclick="installApp('${a.nome}','${a.link}')">INSTALAR</div>
@@ -177,7 +189,6 @@ function openApp(name) {
     </div>
   `;
 
-  // Adiciona estado no histórico
   history.pushState({ page: "details", app: name }, "", "#details");
 
   window.scrollTo(0,0);
@@ -196,7 +207,6 @@ function goHome() {
   if(details) details.style.display="none";
   if(about) about.style.display="none";
 
-  // Atualiza histórico
   history.pushState({ page: "home" }, "", "#home");
 }
 
@@ -208,13 +218,9 @@ function openAbout() {
   if(details) details.style.display="none";
   if(about) about.style.display="block";
 
-  // Atualiza histórico
   history.pushState({ page: "about" }, "", "#about");
 }
 
-// ==============================
-// LIGHTBOX
-// ==============================
 // ==============================
 // LIGHTBOX
 // ==============================
@@ -223,29 +229,23 @@ function openLightbox(i) {
   currentSlide = i;
   const app = appsData.find(a => a.nome === currentAppName);
   if (!app || !app.shots.length) return;
-  
+
   currentShots = app.shots;
   const lightbox = document.getElementById("lightbox");
   const img = document.getElementById("lightbox-img");
   if (!lightbox || !img) return;
-  
+
   lightbox.style.display = "flex";
   img.src = currentShots[i];
-  
-  // Adiciona estado ao histórico para o botão voltar
+
   history.pushState({ page: "lightbox" }, "", "#lightbox");
 }
 
-// Fecha lightbox
 function closeLightbox() {
   const lightbox = document.getElementById("lightbox");
-  if (lightbox) lightbox.style.display = "none";
-  
-  // Volta ao estado anterior no histórico
-  history.back();
+  if (lightbox) lightbox.style.display = "none"; // apenas fecha o lightbox
 }
 
-// Próxima imagem
 function nextSlide() {
   if (!currentShots.length) return;
   currentSlide = (currentSlide + 1) % currentShots.length;
@@ -253,7 +253,6 @@ function nextSlide() {
   if (img) img.src = currentShots[currentSlide];
 }
 
-// Imagem anterior
 function prevSlide() {
   if (!currentShots.length) return;
   currentSlide = (currentSlide - 1 + currentShots.length) % currentShots.length;
@@ -261,14 +260,13 @@ function prevSlide() {
   if (img) img.src = currentShots[currentSlide];
 }
 
-// Navegação via teclado
 window.addEventListener("keydown", (e) => {
   const lightbox = document.getElementById("lightbox");
   if (!lightbox || lightbox.style.display !== "flex") return;
-  
-  if (e.key === "Escape") closeLightbox(); // ESC fecha
-  if (e.key === "ArrowRight") nextSlide(); // seta direita
-  if (e.key === "ArrowLeft") prevSlide(); // seta esquerda
+
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowRight") nextSlide();
+  if (e.key === "ArrowLeft") prevSlide();
 });
 
 // ==============================
@@ -277,19 +275,18 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("popstate", (event) => {
   const state = event.state;
   const lightbox = document.getElementById("lightbox");
-  
-  // Se o lightbox estiver aberto, fecha antes de voltar
-  if (lightbox && lightbox.style.display === "flex") {
+
+  if(lightbox && lightbox.style.display === "flex"){
     closeLightbox();
     return;
   }
-  
-  if (!state || state.page === "home") {
+
+  if(!state || state.page === "home"){
     goHome();
-  } else if (state.page === "details") {
+  } else if(state.page === "details"){
     const appName = state.app || currentAppName;
     openApp(appName);
-  } else if (state.page === "about") {
+  } else if(state.page === "about"){
     openAbout();
   }
 });
@@ -372,8 +369,7 @@ function updateMainData() {
   const ratingMain = document.getElementById("rating-main");
 
   db.ref(`apps/${currentAppName}/downloads`).once("value", snap => {
-    if (downloadsMain && downloadsMain.nextSibling)
-      downloadsMain.nextSibling.textContent = (snap.val() || 0).toLocaleString();
+    if (downloadsMain) downloadsMain.textContent = (snap.val() || 0).toLocaleString();
   });
 
   db.ref(`apps/${currentAppName}/rating`).once("value", snap => {
@@ -388,28 +384,6 @@ function updateMainData() {
 // ==============================
 renderCategories();
 renderApps();
-
-// ==============================
-// POPSTATE — BOTÃO VOLTAR
-// ==============================
-window.addEventListener("popstate", (event) => {
-  const state = event.state;
-  const lightbox = document.getElementById("lightbox");
-
-  if(lightbox && lightbox.style.display === "flex"){
-    closeLightbox();
-    return;
-  }
-
-  if(!state || state.page === "home"){
-    goHome();
-  } else if(state.page === "details"){
-    const appName = state.app || currentAppName;
-    openApp(appName);
-  } else if(state.page === "about"){
-    openAbout();
-  }
-});
 
 // ==============================
 // GARANTIR QUE O APP COMEÇA NO TOPO
