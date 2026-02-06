@@ -31,6 +31,7 @@
 <body>
 <div class="page">
 
+  <!-- HEADER -->
   <header>
     <div class="top">
       <div class="logo">NosPlay</div>
@@ -41,12 +42,15 @@
     <div class="categories" id="cats"></div>
   </header>
 
+  <!-- HOME / LISTA DE APPS -->
   <section id="home" class="section">
     <div class="apps" id="apps"></div>
   </section>
 
+  <!-- DETALHES DO APP -->
   <section id="details"></section>
 
+  <!-- SOBRE / POLÍTICA -->
   <section id="about">
     <div class="back" onclick="goHome()">← Voltar</div>
     <h2>Sobre a NosPlay</h2>
@@ -64,7 +68,7 @@
 
 </div>
 
-<!-- LIGHTBOX -->
+<!-- LIGHTBOX PARA PRINTS -->
 <div id="lightbox">
   <span id="prev-btn" onclick="prevSlide()">&#10094;</span>
   <span id="next-btn" onclick="nextSlide()">&#10095;</span>
@@ -72,11 +76,11 @@
   <img id="lightbox-img">
 </div>
 
-<!-- JS -->
+<!-- JS PRINCIPAL -->
 <script src="app.js"></script>
 
 <script>
-  // Botão físico do sistema -> voltar
+  // Botão físico do Android / navegador -> voltar
   window.addEventListener("popstate", () => {
     const lightbox = document.getElementById("lightbox");
     const details = document.getElementById("details");
@@ -101,11 +105,10 @@
   }
 </script>
 
-
-  <footer>
-    © 2025 NosPlay — Todos os direitos reservados<br>
-    <a href="#" onclick="openAbout()">Sobre / Política</a>
-  </footer>
+<footer>
+  © 2025 NosPlay — Todos os direitos reservados<br>
+  <a href="https://nosplay.netlify.app/" onclick="openAbout()">Sobre / Política</a>
+</footer>
 
 </body>
 </html>
