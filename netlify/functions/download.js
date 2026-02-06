@@ -3,8 +3,8 @@ const fetch = require('node-fetch');
 exports.handler = async function(event, context) {
   const fileName = event.queryStringParameters.file;
 
-  // URL direta do release no GitHub
-  const githubUrl = `https://github.com/lyedsonmucale0-commits/HolyPlay/releases/download/V1.2/${fileName}`;
+  // Link direto do seu GitHub Release
+  const githubUrl = `https://github.com/lyedsonmucale0-commits/NosPlayAPK/releases/download/V1.2/${fileName}`;
 
   try {
     const response = await fetch(githubUrl);
