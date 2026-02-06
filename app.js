@@ -37,7 +37,7 @@ const appsData = [
       "https://i.imgur.com/vD5udWA.jpeg",
       "https://i.imgur.com/Zi5kAjp.jpeg"
     ],
-    link: "https://github.com/lyedsonmucale0-commits/HolyPlay/releases/download/V1.2/HolyPlay.apk"
+    link: "/.netlify/functions/download?file=HolyPlay.apk"
   }
 ];
 
@@ -190,7 +190,6 @@ function openApp(name) {
   `;
 
   history.pushState({ page: "details", app: name }, "", "#details");
-  
   // ==============================
 // INSTALAR APP (DOWNLOAD PARA NAVEGADOR)
 // ==============================
@@ -205,7 +204,7 @@ function installApp(appName, link) {
     "Após baixar, instale o aplicativo manualmente."
   );
 
-  // Abrir link em nova aba (Chrome / navegador)
+  // Abrir link em nova aba
   window.open(link, "_blank");
 }
 
