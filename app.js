@@ -193,22 +193,60 @@ function openApp(name) {
 // ==============================
 // INSTALL APP (GLOBAL)
 // ==============================
-window.installApp = function (appName, link) {
-  // Incrementa downloads
-  db.ref(`apps/${appName}/downloads`)
-    .transaction(current => (current || 0) + 1);
+window.installApp = function(appName, link) {
+  // Incrementa downloads no Firebase
+  db.ref(`apps/${appName}/downloads`).transaction(current => (current || 0) + 1);
 
-  alert(
-    "📦 O download será aberto no navegador.\n\n" +
-    "Após baixar, instale o aplicativo manualmente."
-  );
-
-  window.open(link, "_blank");
+  // Chama a função Android para baixar o APK
+  if (window.Android && window.Android.baixar) {
+    Android.baixar(link, appName);
+  } else {
+    alert(
+      "📦 O download será aberto no navegador.\n\n" +
+      "Após baixar, instale o aplicativo manualmente."
+    );
+    window.open(link, "_blank");
+  }
 };
 
   window.scrollTo(0,0);
   updateMainData();
   loadComments();
+}
+
+// ==============================
+// FUNÇÃO DE DOWNLOAD COM PROGRESSO
+// ==============================
+function installApp(appName, link) {
+  const barra = document.getElementById("download-progress");
+  if (barra) {
+    barra.style.width = "0%";
+    barra.innerText = "0%";
+    barra.style.display = "block";
+  }
+  
+  // Chama o JsBridge Android
+  if (window.AndroidBridge) {
+    window.AndroidBridge.baixarComProgresso(link, appName);
+  } else {
+    alert("📦 O download será aberto no navegador.\nInstale manualmente após baixar.");
+    window.open(link, "_blank");
+  }
+}
+
+// Atualiza a barra em tempo real
+function updateProgress(pct) {
+  const barra = document.getElementById("download-progress");
+  if (!barra) return;
+  barra.style.width = pct + "%";
+  barra.innerText = pct + "%";
+}
+
+// Finalização do download
+function downloadFinished() {
+  alert("✅ Download concluído!\nInstale o APK em sua pasta de Downloads.");
+  const barra = document.getElementById("download-progress");
+  if (barra) barra.style.display = "none";
 }
 
 // ==============================
